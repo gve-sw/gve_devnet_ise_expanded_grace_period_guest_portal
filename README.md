@@ -122,7 +122,7 @@ On the preferred Self-Registration Guest Portal page (under Work Centers > Guest
 4. Install all dependencies:  
   ```pip install -r requirements.txt```
 
-5. The App requires to be reachable over an internet accessible URL. Therefore, it can be deployed on different IaaS platforms like Heroku, Amazon Web Services Lambda, Google Cloud Platform (GCP) and more. For this demo we use the tool Packetriot for this reason.
+5. The App can be deployed on-prem or on different IaaS platforms like Heroku, Amazon Web Services Lambda, Google Cloud Platform (GCP) and more. In case the approve/deny action is triggered in the same network as the application is running, feel free to skip this step. Otherwise, the application requires to be reachable over an internet accessible URL. For this demo we use the tool Packetriot for this reason.
 Download and configure [Packetriot](https://docs.packetriot.com/quickstart/):    
 
   ```python
@@ -147,7 +147,7 @@ Download and configure [Packetriot](https://docs.packetriot.com/quickstart/):
     SENDER_EMAIL: [email address from which notification emails will be send]​ 
     SENDER_PW: [password of sender email address account]
     ​  
-    PUBLIC_APP_URL: [tunnel hostname, see step 5]​ 
+    APP_URL: [tunnel hostname or localhost:8000, see step 5]​ 
 
     SCHEDULER_INTERVAL_SEC = [Interval in which script checks for new users]  
   ```

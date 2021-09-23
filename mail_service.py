@@ -27,7 +27,7 @@ load_dotenv()
 SENDER_EMAIL = os.environ['SENDER_EMAIL']
 SENDER_PW = os.environ['SENDER_PW']
 
-PUBLIC_APP_URL = os.environ['PUBLIC_APP_URL']
+APP_URL = os.environ['APP_URL']
 
 
 def createSponsorEmailContents(username, firstname, lastname):
@@ -41,15 +41,15 @@ def createSponsorEmailContents(username, firstname, lastname):
                 Username: """+username+"""<br/>
                 First Name: """+firstname+""" <br/>
                 Last Name: """+lastname+"""<br/>
-                <a href='"""+PUBLIC_APP_URL+"""/approve?username="""+username+"""'>Approve</a><br/>
-                <a href='"""+PUBLIC_APP_URL+"""/deny?username="""+username+"""'>Deny</a>
+                <a href='"""+APP_URL+"""/approve?username="""+username+"""'>Approve</a><br/>
+                <a href='"""+APP_URL+"""/deny?username="""+username+"""'>Deny</a>
                 </p>
             </body>
             </html>
             """
     textContent = """Please approve (or deny this self-registering guest. The guest provided the following information: Username: """+username+""", First Name """+firstname+""", Last Name """+lastname+""".
-                <a href='"""+PUBLIC_APP_URL+"""/approve?username="""+username+"""'>Approve</a><br/>
-                <a href='"""+PUBLIC_APP_URL+"""/deny?username="""+username+"""'>Deny</a>"""
+                <a href='"""+APP_URL+"""/approve?username="""+username+"""'>Approve</a><br/>
+                <a href='"""+APP_URL+"""/deny?username="""+username+"""'>Deny</a>"""
 
     return title, htmlContent, textContent
 
