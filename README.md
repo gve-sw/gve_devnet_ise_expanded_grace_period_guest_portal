@@ -147,7 +147,7 @@ Download and configure [Packetriot](https://docs.packetriot.com/quickstart/):
     SENDER_EMAIL: [email address from which notification emails will be send]​ 
     SENDER_PW: [password of sender email address account]
     ​  
-    APP_URL: [tunnel hostname or localhost:8000, see step 5]​ 
+    APP_URL: [tunnel hostname or http://localhost:8000, see step 5]​ 
 
     SCHEDULER_INTERVAL_SEC = [Interval in which script checks for new users]  
   ```
