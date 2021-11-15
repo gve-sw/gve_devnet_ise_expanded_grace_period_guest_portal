@@ -18,6 +18,7 @@ import os
 import requests
 import base64
 import json
+import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 
 # load all environment variables
@@ -55,11 +56,21 @@ sponsor_headers = {
 'Authorization': 'Basic ' + sponsor_encodedAuth
 }
 
-'''User Info'''
-USER_LOCATION = os.environ['USER_LOCATION']
-
 '''Sponsor Portal Info'''
 SPONSOR_PORTAL_ID = os.environ['SPONSOR_PORTAL_ID']
+
+'''Endpoint Groups'''
+SHORT_TERM_ENDPOINT_GROUP = os.environ['SHORT_TERM_ENDPOINT_GROUP']
+LONG_TERM_ENDPOINT_GROUP = os.environ['LONG_TERM_ENDPOINT_GROUP']
+
+'''MGMT API header'''
+mnt_headers = {
+'Accept': 'application/xml',
+'Authorization': 'Basic ' + ers_encodedAuth
+}
+
+'''Private ISE IP for endpoint reauth'''
+ISE_PRIVATE_IP = os.environ['ISE_PRIVATE_IP']
 
 
 '''Create Timestamps based on number of days'''
@@ -200,5 +211,71 @@ def getSponsorPortals():
     response = requests.request(method, url, headers=ers_headers, data={}, verify=False)
     print('Response Code: ' + str(response.status_code))
     return response.text
+
+
+'''
+Get an endpoint by its ID
+'''
+def getEndpointByID(sessionID):
+    print('-----------------GET ENDPOINT BY SESSION ID----------------')
+    url = HOST +":9060/ers/config/endpoint/" + sessionID 	
+    method = "GET"
+    response = requests.request(method, url, headers=ers_headers, data={}, verify=False)
+    print('Response Code: ' + str(response.status_code))
+    return response.text
+
+
+'''
+Update endpoint based on account duration (long, short)
+'''
+def updateEnpointByDuration(sessionID, duration, portalUser):
+    if duration == "short":
+        response = updateEndpointByID(sessionID, SHORT_TERM_ENDPOINT_GROUP, portalUser)
+    elif duration == "long":
+        response = updateEndpointByID(sessionID, LONG_TERM_ENDPOINT_GROUP, portalUser)
+
+    return response
+
+
+'''
+Update the group ID for an endpoint by its ID
+'''
+def updateEndpointByID(sessionID, groupID, portalUser):
+    print('-----------------UPDATE ENDPOINT GROUP ID ----------------')
+    url = HOST +":9060/ers/config/endpoint/" + sessionID 
+
+    data = {
+	"ERSEndPoint": {
+		"id": "",
+		"groupId": "",
+        "portalUser": ""
+        }
+    }
+    data["ERSEndPoint"]["id"] = sessionID
+    data["ERSEndPoint"]["groupId"] = groupID
+    data["ERSEndPoint"]["portalUser"] = portalUser
+
+    method = "PUT"
+    response = requests.request(method, url, headers=ers_headers, data=json.dumps(data), verify=False)
+    print('Response Code: ' + str(response.status_code))
+    return response.text
+
+
+'''
+Reauthenticate a device by its MAC
+'''
+def reauthenticate(deviceMAC):
+    print('------------------------- Reauth User:----------------------------')
+    global ISE_PRIVATE_IP
+    url = HOST + f"/admin/API/mnt/CoA/Reauth/{ISE_PRIVATE_IP}/{deviceMAC}/0"
+    print(url)
+    method = "GET"
+    response = requests.request(method, url, headers=mnt_headers, data={}, verify=False)
+
+    return response.text
+
+
+
+
 
 
