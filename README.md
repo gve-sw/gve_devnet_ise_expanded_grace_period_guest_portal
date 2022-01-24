@@ -1,13 +1,14 @@
 # ISE - Expanded Grace Period Guest Portal
-The expanded grace period guest portal enhances the ISE Self-Registration Guest Portal to allow a grace period longer than 30 min for sponsors to approve a new guest user. Furthermore, it allows the browser window to be closed after the self-registration and automatically connects the guest user to the network after successful registration. ISE instead requires the browser window to stay open while waiting for approval.
+The expanded grace period guest portal enhances the ISE Self-Registration Guest Portal to allow a grace period longer than 30 min for sponsors to approve a new guest user. Furthermore, it allows the browser window to be closed after the self-registration. ISE requires the browser window to stay open while waiting for approval.
 
 
 ## Contacts
 * Ramona Renner
 
 ## Solution Components
-* Cisco ISE (Identity Services Engine) with admin access
+* Cisco ISE (Identity Services Engine)
 * Two email accounts
+
 
 ## Demo Workflow
 
@@ -20,23 +21,14 @@ The expanded grace period guest portal enhances the ISE Self-Registration Guest 
 
 A native ISE self-registration portal covers the creation of a guest user account with 2 weeks validity on successful registration. 
 
-The guest application handles the whole approval process. Therefore, it checks every 20 seconds (interval is adjustable) for new users for whom the approval process has not yet been started. These users are characterized by the value true of a hidden custom field (Approve) in the self-registration form. 
-As soon as a new guest user successfully registers via the self-registration portal, the application will identify the user and start the following approval process based on the mentioned field value:
+The guest application handles the whole approval process. Therefore, it checks every 20 seconds (interval is adjustable) for new users for whom the approval process has not yet been started. These users are characterised by the value true of a hidden custom field (Approve) in the self-registration form. 
+As soon as a new guest user successfully registers via the self-registration portal the application will identify the user and start the following approval process based on the mentioned field value:
 1. Request detailed information about the identified new user
-2. Change custom field (Approve) to waiting
-3. Request detailed information about the endpoint associated with the session of the user 
-4. Assign endpoint to predefined short-term endpoint group
-5. Trigger change of authorization to reauthenticate the endpoint
-6. Send approval request email to sponsor
-7. Sponsor triggers the action to accept or deny by clicking the corresponding link in the email.   
-7.1. Accept:  
-7.1.1. Update guest user's account validity to 180 days and change custom field (Approve) to approved  
-7.1.2. Request detailed information about the endpoint associated with the session of the user  
-7.1.3. Assign endpoint to predefined long-term endpoint group  
-7.1.4. Trigger change of authorization to reauthenticate the endpoint  
-7.2. Deny:  
-7.2.1. Suspend user from network  
-8. Send approval result email to guest user  
+2. Send approval request email to sponsor and change custom field (Approve) to waiting
+3. Sponsor triggers the action to accept or deny by clicking the corresponding link in the email.   
+3.1. Accept: Update guest user's account validity to 180 days and change custom field (Approve) to approved  
+3.2. Deny: Suspend user from network 
+4. Send approval result email to guest user
 
 
 
@@ -51,11 +43,7 @@ Configure the following steps after the basic portal setup to prepare ISE for th
 1. **Add user location to ISE:** Go to: Work Centers > Guest Access > Settings > Guest Locations and SSIDs > Fill in **Location name** (e.g. San Jose) > Choose **Time zone** (e.g. America/Los_Angeles) > Click **Add** > Click: **Save**
   ![/IMAGES/locations.png](/IMAGES/locations.png)
 
-2. **Create two custom fields in ISE:** Go to: Work Centers > Guest Access > Settings > Custom Fields > Fill in **Custom field name** > Choose **Data type** > Click **Add** > Click: **Save**
-  
-* Customer field 1: Name: Approve, Type: String
-* Customer field 2: Name: SessionID, Type: String
-
+2. **Create a custom field in ISE:** Go to: Work Centers > Guest Access > Settings > Custom Fields > Fill in **Custom field name** (e.g.Approve) > Choose **Data type** (e.g. String) > Click **Add** > Click: **Save**
   ![/IMAGES/createCustomField.png](/IMAGES/createCustomField.png) 
   
 
@@ -67,7 +55,7 @@ On the preferred Self-Registration Guest Portal page (under Work Centers > Guest
 4. **Set account validity to 14 days and guest type to Contractor (default):** Go to: ... > Portal Behavior and Flow Settings -> Registration Form Settings > Set: Assign to guest type **Contractor (default)** and Account valid for **14 Days**  
   ![/IMAGES/validity.png](/IMAGES/validity.png)
 
-5. **Add custom fields to the self-registration form:** Go to: ... > Portal Behavior and Flow Settings -> Registration Form Settings > Fields to include > Click: **Custom Fields** > Select preferred custom fields (Approve and SessionID) > Click **OK**  
+5. **Add custom field to the self-registration form:** Go to: ... > Portal Behavior and Flow Settings -> Registration Form Settings > Fields to include > Click: **Custom Fields** > Select preferred custom field (e.g. Approve) > Click **OK**  
   ![/IMAGES/addCustomField.png](/IMAGES/addCustomField.png)
   ![/IMAGES/addCustomField2.png](/IMAGES/addCustomField2.png)  
 
@@ -80,7 +68,6 @@ On the preferred Self-Registration Guest Portal page (under Work Centers > Guest
   * Location (add location as decribed in step 1 beforehand e.g. San Jose)
   * Person being visited
   * Approve (add custom field as described in step 5 beforehand)
-  * SessionID (add custom field as described in step 5 beforehand)
 
   ![/IMAGES/formfields.png](/IMAGES/formfields.png)
 
@@ -89,20 +76,13 @@ On the preferred Self-Registration Guest Portal page (under Work Centers > Guest
 
 8. Save all changes in the **Portal Behavior and Flow Settings** tab by clicking **Save** 
 
-9. **Add a script to hide the custom fields and set their value - approve: true; sessionID: id shared in URL:** True indicates a new guest user for whom the approval process has not yet been started. Go to: ... > Portal Page Customization >      
+9. **Add a script to hide the custom field and to set its value to true.** True indicates a new guest user for whom the approval process has not yet been started. Go to: ... > Portal Page Customization >      
   
   Registration Form > Add the following in the  **Optional Content 2** field > Click: **Save**:   
   ```python 
   <script type="text/javascript">
     $('input[id="guestUser.fieldValues.ui_approve_text"]').attr('value', 'true');
     $('label[for="guestUser.fieldValues.ui_approve_text"]').parent().hide();
-    
-    //Get url
-    var url= window.location.href;
-    var session_id = url.split('sessionId=').pop().split('&')[0];
-    
-    $('input[id="guestUser.fieldValues.ui_sessionid_text"]').attr('value', session_id );
-    $('label[for="guestUser.fieldValues.ui_sessionid_text"]').parent().hide();
   </script>
   ```
 
@@ -110,8 +90,7 @@ On the preferred Self-Registration Guest Portal page (under Work Centers > Guest
 
   ```python
   <script type="text/javascript">
-      $('div.ui_reg_succ_approve_text_label').hide();
-      $('div.ui_reg_succ_sessionid_text_label').hide();
+    $('div.ui_reg_succ_approve_text_label').hide();
   </script>
   ```
   
@@ -124,9 +103,6 @@ On the preferred Self-Registration Guest Portal page (under Work Centers > Guest
   9.2. Create ERS Admin  
   9.3. Set up ERS for Sponsor Access  
 
-10. **Verify the monitoring node:** Follow the [instructions to verify a monitoring node](https://developer.cisco.com/docs/identity-services-engine/3.0/#!introduction-to-monitoring-rest-apis/verifying-a-monitoring-node) to:  
-  10.1. Go to: Administration > System > Deployment  
-  10.2. Check that the target node you want to monitor is listed as a monitoring node  
 
 
 ### Guest Application Setup
@@ -157,9 +133,7 @@ Download and configure [Packetriot](https://docs.packetriot.com/quickstart/):
 6. Configure the environment variables in **.env** file:  
       
   ```python  
-    HOST: https://[ISE hostname/IP]​
-    ISE_PRIVATE_IP= [Private ISE IP]
-
+    HOST: https://[ISE hostname/IP]​  
     ERS_USERNAME: [ISE username]  ​
     ERS_PASSWORD: [ISE password]​  
 
@@ -168,17 +142,12 @@ Download and configure [Packetriot](https://docs.packetriot.com/quickstart/):
     ​ 
     SPONSOR_PORTAL_ID: [ID of associated sponsor portal - see hint on how to easily retrieve the ID]​  
 
-    USER_LOCATION: [user location (e.g.: San Jose)]​  
-
     SENDER_EMAIL: [email address from which notification emails will be send]​ 
     SENDER_PW: [password of sender email address account]
     ​  
     APP_URL: [tunnel hostname or http://localhost:8000, see step 5]​ 
 
     SCHEDULER_INTERVAL_SEC = [Interval in which script checks for new users] 
-
-    SHORT_TERM_ENDPOINT_GROUP= [ID of endpoint group for short-term guest user] 
-    LONG_TERM_ENDPOINT_GROUP= [ID of endpoint group for long-term guest user]  
   ```
 
 > Note: Make sure that the sender email account settings allow the sending of emails via an external app (e.g. [Instructions for gmail.com account](https://www.google.com/settings/security/lesssecureapps) - Use only for testing purposes.)  
@@ -194,7 +163,6 @@ At this point everything is set up and the application is running. Add a new use
 
  - [Cisco ISE API Documentation](https://developer.cisco.com/docs/identity-services-engine/3.0/#!cisco-ise-api-documentation)
  - [Cisco ISE ERS API Examples](https://community.cisco.com/t5/security-documents/ise-ers-api-examples/ta-p/3622623)
- - [Cisco ISE Monitoring REST API](https://developer.cisco.com/docs/identity-services-engine/3.0/#!introduction-to-monitoring-rest-apis)
 
 ### LICENSE
 

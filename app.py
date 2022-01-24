@@ -42,28 +42,13 @@ def approve():
     print('--------APROVING TRIGGERED VIA EMAIL----------')
     username = request.args.get('username')
     user = json.loads(api_service.getGuestUserbasedOnName(username))
-
-    print(user)
     
-    if 'GuestUser' in user and 'ui_approve_text_label' in user['GuestUser']['customFields'] and 'ui_sessionid_text_label' in user['GuestUser']['customFields'] and user['GuestUser']['customFields']['ui_approve_text_label'] == 'waiting':
+    if 'GuestUser' in user and 'ui_approve_text_label' in user['GuestUser']['customFields'] and user['GuestUser']['customFields']['ui_approve_text_label'] == 'waiting':
         
         #update guestuser to have access for 180 days and change approval state to 'approved' 
         updateInfo = api_service.updateGuestUserByName(user['GuestUser']['name'], 180, 'approved')
         print(updateInfo)
-
-        #assign user to endpoint group for long term access
-        sessionID = user['GuestUser']['customFields']['ui_sessionid_text_label']
-        print('Session ID:' + sessionID)
-        endpoint = json.loads(api_service.getEndpointByID(sessionID))
-        print(endpoint)
-        updateInfoEndpoint = api_service.updateEnpointByDuration(sessionID, "long", endpoint["ERSEndPoint"]["portalUser"])
-        print(updateInfoEndpoint)
-
-        #reauth device 
-        deviceMAC = endpoint['ERSEndPoint']['mac']
-        reauth = api_service.reauthenticate(deviceMAC)
-        print(reauth)
-
+        
         #inform guest user about approved request
         mail_service.sendMail(user['GuestUser'], 'guestSucc', '') 
         
@@ -137,32 +122,20 @@ def sendApprovalMails():
     for user in json.loads(users)['SearchResult']['resources']:
         
         detailUser = json.loads(api_service.getGuestUserbasedOnName(user['name']))
-       
-        if 'GuestUser' in detailUser and 'ui_approve_text_label' in detailUser['GuestUser']['customFields'] and 'ui_sessionid_text_label' in detailUser['GuestUser']['customFields'] and detailUser['GuestUser']['customFields']['ui_approve_text_label'] == 'true':
+
+        if 'GuestUser' in detailUser and 'ui_approve_text_label' in detailUser['GuestUser']['customFields'] and detailUser['GuestUser']['customFields']['ui_approve_text_label'] == 'true':
             
             print(detailUser) 
             
             #update guestuser to have access for 14 days and approval state to 'waiting'             
-            updateInfoGuestUser = api_service.updateGuestUserByName(user['name'], 14, 'waiting')
-            print(updateInfoGuestUser)
+            updateInfo = api_service.updateGuestUserByName(user['name'], 14, 'waiting')
             
-            #assign user to endpoint group for short term access
-            sessionID = detailUser['GuestUser']['customFields']['ui_sessionid_text_label']
-            print('Session ID:' + sessionID)
-            endpoint = json.loads(api_service.getEndpointByID(sessionID))
-            print(endpoint)
-            updateInfoEndpoint = api_service.updateEnpointByDuration(sessionID, "short", endpoint["ERSEndPoint"]["portalUser"])
-            print(updateInfoEndpoint)
+            print(updateInfo)
 
-            #reauth device 
-            deviceMAC = endpoint['ERSEndPoint']['mac']
-            reauth = api_service.reauthenticate(deviceMAC)
-            print(reauth)
+            sponsorMail = detailUser['GuestUser']['personBeingVisited']
 
             #inform sponsor about new request
-            sponsorMail = detailUser['GuestUser']['personBeingVisited']
             mail_service.sendMail(detailUser['GuestUser'], 'sponsor', sponsorMail) 
-            
             return True
         
     return False

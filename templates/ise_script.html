@@ -19,16 +19,9 @@ or implied.
 <script type="text/javascript">
     $('input[id="guestUser.fieldValues.ui_approve_text"]').attr('value', 'true');
     $('label[for="guestUser.fieldValues.ui_approve_text"]').parent().hide();
-    
-    var url= window.location.href;
-    var session_id = url.split('sessionId=').pop().split('&')[0];
-    
-    $('input[id="guestUser.fieldValues.ui_sessionid_text"]').attr('value', session_id );
-    $('label[for="guestUser.fieldValues.ui_sessionid_text"]').parent().hide();
 </script>
 
 <!--Self-Registration Success -->
 <script type="text/javascript">
     $('div.ui_reg_succ_approve_text_label').hide();
-    $('div.ui_reg_succ_sessionid_text_label').hide();
 </script>
